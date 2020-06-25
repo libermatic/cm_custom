@@ -12,6 +12,13 @@ app_color = "grey"
 app_email = "info@libermatic.com"
 app_license = "MIT"
 
+fixtures = [
+    {
+        "doctype": "Property Setter",
+        "filters": {"name": ("in", ["Customer-customer_type-default"])},
+    }
+]
+
 # Includes in <head>
 # ------------------
 
@@ -108,6 +115,8 @@ app_license = "MIT"
 # 		"cm_custom.tasks.monthly"
 # 	]
 # }
+
+after_migrate = ["cm_custom.install.after_migrate"]
 
 # Testing
 # -------
