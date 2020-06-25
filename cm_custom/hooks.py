@@ -14,9 +14,16 @@ app_license = "MIT"
 
 fixtures = [
     {
+        "doctype": "Custom Field",
+        "filters": {
+            "fieldname": ("like", "cm_%"),
+            "dt": ("in", ["Purchase Receipt Item", "Purchase Invoice Item",],),
+        },
+    },
+    {
         "doctype": "Property Setter",
         "filters": {"name": ("in", ["Customer-customer_type-default"])},
-    }
+    },
 ]
 
 # Includes in <head>
@@ -87,13 +94,14 @@ fixtures = [
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+    "Purchase Receipt": {
+        "before_validate": "cm_custom.doc_events.purchase_receipt.before_validate",
+    },
+    "Purchase Invoice": {
+        "before_validate": "cm_custom.doc_events.purchase_invoice.before_validate",
+    },
+}
 
 # Scheduled Tasks
 # ---------------
