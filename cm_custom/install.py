@@ -50,6 +50,11 @@ def _update_settings():
     for args in settings().items():
         update(*args)
 
+    if not frappe.db.exists("Variant Field", {"field_name": "has_batch_no"}):
+        doc = frappe.get_single("Item Variant Settings")
+        doc.append("fields", {"field_name": "has_batch_no"})
+        doc.save(ignore_permissions=True)
+
 
 def _set_naming_series():
     from frappe.custom.doctype.property_setter.property_setter import (
