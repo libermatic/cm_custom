@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/libermatic/cm_custom/issues"
   },
-  "homepage": "https://github.com/libermatic/cm_custom#readme"
+  "homepage": "https://github.com/libermatic/cm_custom#readme",
+  "dependencies": {
+    "ramda": "^0.27.0"
+  }
 }

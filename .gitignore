@@ -4,3 +4,11 @@
 *.swp
 tags
 cm_custom/docs/current
+
+__pycache__
+.env
+
+# Bench runtime
+node_modules/
+cm_custom/public/node_modules
+yarn.lock
