@@ -17,7 +17,10 @@ fixtures = [
         "doctype": "Custom Field",
         "filters": {
             "fieldname": ("like", "cm_%"),
-            "dt": ("in", ["Purchase Receipt Item", "Purchase Invoice Item",],),
+            "dt": (
+                "in",
+                ["Purchase Receipt Item", "Purchase Invoice Item", "POS Profile"],
+            ),
         },
     },
     {
