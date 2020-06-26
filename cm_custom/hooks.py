@@ -34,14 +34,14 @@ fixtures = [
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/cm_custom/css/cm_custom.css"
-# app_include_js = "/assets/cm_custom/js/cm_custom.js"
+app_include_js = ["/assets/js/cm_custom.min.js"]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/cm_custom/css/cm_custom.css"
 # web_include_js = "/assets/cm_custom/js/cm_custom.js"
 
 # include js in page
-# page_js = {"page" : "public/js/file.js"}
+page_js = {"point-of-sale": "public/includes/point_of_sale.js"}
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
