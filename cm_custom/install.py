@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import frappe
+from toolz.curried import pluck
 
 
 def after_migrate():
@@ -11,6 +12,7 @@ def after_migrate():
 def setup_defaults():
     _update_settings()
     _set_naming_series()
+    _create_account_dimenstions()
 
 
 def settings():
@@ -75,3 +77,23 @@ def _set_naming_series():
 
     for args in naming_series().items():
         update(*args)
+
+
+def _create_account_dimenstions():
+    if frappe.db.exists("Accounting Dimension", {"document_type": "Branch"}):
+        return
+
+    doc = frappe.get_doc(
+        {
+            "doctype": "Accounting Dimension",
+            "document_type": "Branch",
+            "label": "Branch",
+        }
+    )
+    for company in pluck("name", frappe.get_all("Company")):
+        doc.append(
+            "dimension_defaults",
+            {"company": company, "mandatory_for_bs": 1, "mandatory_for_pl": 1},
+        )
+
+    doc.save(ignore_permissions=True)
