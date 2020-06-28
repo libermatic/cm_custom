@@ -1,10 +1,10 @@
 async function set_branch(frm) {
   const { pos_profile } = frm.doc;
   if (pos_profile) {
-    const { message: { cm_branch: branch } = {} } = await frappe.db.get_value(
+    const { message: { branch } = {} } = await frappe.db.get_value(
       'POS Profile',
       pos_profile,
-      'cm_branch'
+      'branch'
     );
     frm.set_value({ branch });
   }
