@@ -19,7 +19,12 @@ fixtures = [
             "fieldname": ("like", "cm_%"),
             "dt": (
                 "in",
-                ["Purchase Receipt Item", "Purchase Invoice Item", "POS Profile"],
+                [
+                    "Purchase Receipt Item",
+                    "Purchase Invoice Item",
+                    "Payment Entry",
+                    "POS Profile",
+                ],
             ),
         },
     },
