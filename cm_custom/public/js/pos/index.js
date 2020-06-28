@@ -1,3 +1,8 @@
-import xz_report from './xz_report';
+import { compose } from 'ramda';
+import branch from './branch';
 
-export const pageOverrides = [xz_report];
+export const pageOverrides = [branch];
+
+export const extensions = {
+  pos: compose(...pageOverrides),
+};

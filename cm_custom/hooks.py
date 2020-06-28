@@ -22,8 +22,8 @@ fixtures = [
                 [
                     "Purchase Receipt Item",
                     "Purchase Invoice Item",
-                    "Payment Entry",
                     "POS Profile",
+                    "XZ Report",
                 ],
             ),
         },

@@ -1,23 +1,25 @@
-async function set_branch(frm) {
-  const { pos_profile } = frm.doc;
-  if (pos_profile) {
-    const { message: { branch } = {} } = await frappe.db.get_value(
-      'POS Profile',
-      pos_profile,
-      'branch'
-    );
-    frm.set_value({ branch });
-  }
-}
-
 export default function sales_invoice() {
   return {
-    setup: function (frm) {
-      frm.cscript['is_pos'] = async function () {
-        await frm.cscript.set_pos_data();
-        set_branch(frm);
-      };
+    is_pos: async function (frm) {
+      const { is_pos, company } = frm.doc;
+      if (is_pos && company && !frm.doc.pos_profile) {
+        const { message: { branch } = {} } = await frappe.call({
+          method: 'erpnext.stock.get_item_details.get_pos_profile',
+          args: { company },
+        });
+        frm.set_value({ branch });
+      }
     },
-    pos_profile: set_branch,
+    pos_profile: async function (frm) {
+      const { pos_profile } = frm.doc;
+      if (pos_profile) {
+        const { message: { branch } = {} } = await frappe.db.get_value(
+          'POS Profile',
+          pos_profile,
+          'branch'
+        );
+        frm.set_value({ branch });
+      }
+    },
   };
 }
