@@ -9,7 +9,7 @@
 //     .join(' ');
 // }
 
-const __version__ = '0.0.3';
+const __version__ = '0.1.0';
 
 frappe.provide('cm_custom');
 cm_custom = { __version__ };
