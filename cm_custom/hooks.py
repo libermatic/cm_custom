@@ -15,18 +15,7 @@ app_license = "MIT"
 fixtures = [
     {
         "doctype": "Custom Field",
-        "filters": {
-            "fieldname": ("like", "cm_%"),
-            "dt": (
-                "in",
-                [
-                    "Purchase Receipt Item",
-                    "Purchase Invoice Item",
-                    "POS Profile",
-                    "XZ Report",
-                ],
-            ),
-        },
+        "filters": {"fieldname": ("like", "cm_%"), "dt": ("in", ["XZ Report"])},
     },
     {
         "doctype": "Property Setter",
@@ -46,7 +35,7 @@ app_include_js = ["/assets/js/cm_custom.min.js"]
 # web_include_js = "/assets/cm_custom/js/cm_custom.js"
 
 # include js in page
-page_js = {"point-of-sale": "public/includes/point_of_sale.js"}
+# page_js = {"page": "public/includes/page.js"}
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
@@ -103,12 +92,10 @@ page_js = {"point-of-sale": "public/includes/point_of_sale.js"}
 # Hook on document methods and events
 
 doc_events = {
-    "Purchase Receipt": {
-        "before_validate": "cm_custom.doc_events.purchase_receipt.before_validate",
+    "Sales Invoice": {
+        "set_missing_values": "cm_custom.doc_events.sales_invoice.set_missing_values",
     },
-    "Purchase Invoice": {
-        "before_validate": "cm_custom.doc_events.purchase_invoice.before_validate",
-    },
+    "XZ Report": {"before_save": "cm_custom.doc_events.xz_report.before_save"},
 }
 
 # Scheduled Tasks
