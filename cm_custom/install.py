@@ -92,8 +92,7 @@ def _create_account_dimenstions():
     )
     for company in pluck("name", frappe.get_all("Company")):
         doc.append(
-            "dimension_defaults",
-            {"company": company, "mandatory_for_bs": 1, "mandatory_for_pl": 1},
+            "dimension_defaults", {"company": company},
         )
 
     doc.save(ignore_permissions=True)
