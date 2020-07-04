@@ -19,7 +19,29 @@ fixtures = [
     },
     {
         "doctype": "Property Setter",
-        "filters": {"name": ("in", ["Customer-customer_type-default"])},
+        "filters": {
+            "name": (
+                "in",
+                [
+                    "Customer-customer_type-default",
+                    "Purchase Invoice Item-item_code-columns",
+                    "Purchase Invoice Item-qty-columns",
+                    "Purchase Invoice Item-uom-in_list_view",
+                    "Purchase Invoice Item-uom-columns",
+                    "Purchase Invoice Item-rate-columns",
+                    "Purchase Receipt Item-item_code-columns",
+                    "Purchase Receipt Item-qty-columns",
+                    "Purchase Receipt Item-uom-in_list_view",
+                    "Purchase Receipt Item-uom-columns",
+                    "Purchase Receipt Item-rate-columns",
+                    "Purchase Receipt Item-amount-columns",
+                    "Purchase Receipt Item-net_amount-in_list_view",
+                    "Purchase Receipt Item-warehouse-in_list_view",
+                    "Purchase Receipt Item-batch_no-in_list_view",
+                    "Purchase Receipt Item-seral_no-in_list_view",
+                ],
+            )
+        },
     },
 ]
 
