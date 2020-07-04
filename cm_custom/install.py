@@ -10,8 +10,8 @@ def after_migrate():
 
 
 def setup_defaults():
-    _update_settings()
-    _set_naming_series()
+    # _update_settings()
+    # _set_naming_series()
     _create_account_dimenstions()
 
 
