@@ -15,7 +15,10 @@ app_license = "MIT"
 fixtures = [
     {
         "doctype": "Custom Field",
-        "filters": {"fieldname": ("like", "cm_%"), "dt": ("in", ["XZ Report"])},
+        "filters": {
+            "fieldname": ("like", "cm_%"),
+            "dt": ("in", ["XZ Report", "Customer"]),
+        },
     },
     {
         "doctype": "Property Setter",
@@ -23,6 +26,9 @@ fixtures = [
             "name": (
                 "in",
                 [
+                    "Customer-title_field",
+                    "Customer-search_fields",
+                    "Customer-customer_name-default",
                     "Customer-customer_type-default",
                     "Purchase Invoice Item-item_code-columns",
                     "Purchase Invoice Item-qty-columns",
@@ -114,6 +120,7 @@ app_include_js = ["/assets/js/cm_custom.min.js"]
 # Hook on document methods and events
 
 doc_events = {
+    "Customer": {"before_save": "cm_custom.doc_events.customer.before_insert"},
     "Sales Invoice": {
         "set_missing_values": "cm_custom.doc_events.sales_invoice.set_missing_values",
     },
