@@ -157,11 +157,11 @@ after_migrate = ["cm_custom.install.after_migrate"]
 
 # Overriding Methods
 # ------------------------------
-#
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "cm_custom.event.get_events"
-# }
-#
+4
+override_whitelisted_methods = {
+    "erpnext.stock.get_item_details.get_item_details": "cm_custom.overrides.get_item_details.get_item_details"
+}
+
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
