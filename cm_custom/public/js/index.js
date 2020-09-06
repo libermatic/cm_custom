@@ -9,7 +9,7 @@ import * as extensions from './extensions';
 //     .join(' ');
 // }
 
-const __version__ = '0.1.2';
+const __version__ = '0.1.3';
 
 frappe.provide('cm_custom');
 cm_custom = { __version__, extensions };
