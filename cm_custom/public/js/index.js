@@ -1,5 +1,5 @@
 // import * as scripts from './scripts';
-// import { extensions } from './pos';
+import * as extensions from './extensions';
 // import * as cscripts from './cscripts';
 
 // function get_doctype(import_name) {
@@ -12,7 +12,7 @@
 const __version__ = '0.1.2';
 
 frappe.provide('cm_custom');
-cm_custom = { __version__ };
+cm_custom = { __version__, extensions };
 
 // Object.keys(cscripts).forEach((import_name) => {
 //   const get_handler = cscripts[import_name];
