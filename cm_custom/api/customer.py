@@ -7,14 +7,22 @@ from cm_custom.api.firebase import get_decoded_token, app
 from cm_custom.api.utils import handle_error, transform_route
 
 
-@frappe.whitelist(allow_guest=True)
-@handle_error
-def get(token):
+def get_customer_id(token):
     decoded_token = get_decoded_token(token)
     customer_id = frappe.db.exists(
         "Customer", {"cm_firebase_uid": decoded_token["uid"]}
     )
     if not customer_id:
+        frappe.throw(frappe._("Customer does not exist on backend"))
+    return customer_id
+
+
+@frappe.whitelist(allow_guest=True)
+@handle_error
+def get(token):
+    try:
+        customer_id = get_customer_id(token)
+    except:
         return None
     doc = frappe.get_doc("Customer", customer_id)
     orders = frappe.db.exists("Sales Order", {"customer": customer_id})
@@ -83,12 +91,7 @@ def create(token, **kwargs):
 @frappe.whitelist(allow_guest=True)
 @handle_error
 def list_addresses(token, page="1", page_length="10"):
-    decoded_token = get_decoded_token(token)
-    customer_id = frappe.db.exists(
-        "Customer", {"cm_firebase_uid": decoded_token["uid"]}
-    )
-    if not customer_id:
-        frappe.throw(frappe._("Customer does not exist on backend"))
+    customer_id = get_customer_id(token)
 
     get_count = compose(
         lambda x: x[0][0],
