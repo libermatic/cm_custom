@@ -1,0 +1,41 @@
+{
+ "creation": "2020-08-31 04:14:22.542120",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "webapp_user"
+ ],
+ "fields": [
+  {
+   "fieldname": "webapp_user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Default WebApp User",
+   "options": "User",
+   "reqd": 1
+  }
+ ],
+ "issingle": 1,
+ "modified": "2020-08-31 04:14:37.938004",
+ "modified_by": "Administrator",
+ "module": "Ahong eCommerce",
+ "name": "Ahong eCommerce Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Website Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

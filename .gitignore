@@ -12,3 +12,4 @@ __pycache__
 node_modules/
 cm_custom/public/node_modules
 yarn.lock
+firebase-admin-sdk.json
