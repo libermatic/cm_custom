@@ -138,3 +138,30 @@ def list_addresses(token, page="1", page_length="10"):
         "pages": frappe.utils.ceil(count / frappe.utils.cint(page_length)),
         "items": addresses,
     }
+
+
+@frappe.whitelist(allow_guest=True)
+@handle_error
+def get_address(token, name):
+    customer_id = get_customer_id(token)
+    if not frappe.db.exists(
+        "Dynamic Link",
+        {"parent": name, "link_doctype": "Customer", "link_name": customer_id},
+    ):
+        frappe.throw(frappe._("Address not found"))
+
+    return frappe.get_cached_value(
+        "Address",
+        name,
+        fieldname=[
+            "name",
+            "address_line1",
+            "address_line1",
+            "city",
+            "state",
+            "country",
+            "pincode",
+        ],
+        as_dict=1,
+    )
+
