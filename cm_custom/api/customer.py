@@ -6,6 +6,8 @@ from firebase_admin import auth
 from cm_custom.api.firebase import get_decoded_token, app
 from cm_custom.api.utils import handle_error, transform_route
 
+CUSTOMER_FIELDS = ["name", "customer_name", "mobile_no", "email_id"]
+
 
 def get_customer_id(token):
     decoded_token = get_decoded_token(token)
@@ -27,7 +29,7 @@ def get(token):
     doc = frappe.get_doc("Customer", customer_id)
     orders = frappe.db.exists("Sales Order", {"customer": customer_id})
     return merge(
-        keyfilter(lambda x: x in ["name", "customer_name"], doc.as_dict()),
+        keyfilter(lambda x: x in CUSTOMER_FIELDS, doc.as_dict()),
         {"can_register_messaging": bool(orders)},
     )
 
@@ -85,7 +87,19 @@ def create(token, **kwargs):
     auth.set_custom_user_claims(uid, {"customer": True}, app=app)
 
     frappe.set_user(session_user)
-    return keyfilter(lambda x: x in ["name", "customer_name"], doc.as_dict())
+    return keyfilter(lambda x: x in CUSTOMER_FIELDS, doc.as_dict())
+
+
+@frappe.whitelist(allow_guest=True)
+@handle_error
+def update(token, **kwargs):
+    customer_id = get_customer_id(token)
+
+    args = keyfilter(lambda x: x in ["customer_name"], kwargs)
+    doc = frappe.get_doc("Customer", customer_id)
+    doc.update(args)
+    doc.save(ignore_permissions=True)
+    return keyfilter(lambda x: x in CUSTOMER_FIELDS, doc.as_dict())
 
 
 @frappe.whitelist(allow_guest=True)
@@ -165,3 +179,30 @@ def get_address(token, name):
         as_dict=1,
     )
 
+
+@frappe.whitelist(allow_guest=True)
+@handle_error
+def create_address(token, **kwargs):
+    customer_id = get_customer_id(token)
+    fields = ["address_line1", "address_line2", "city", "state", "country", "pincode"]
+    args = keyfilter(lambda x: x in fields, kwargs)
+    doc = frappe.get_doc(
+        merge({"doctype": "Address", "address_type": "Billing"}, args,)
+    )
+    doc.append("links", {"link_doctype": "Customer", "link_name": customer_id})
+    doc.insert(ignore_permissions=True)
+    return keyfilter(lambda x: x in ["name"] + fields, doc.as_dict())
+
+
+@frappe.whitelist(allow_guest=True)
+@handle_error
+def delete_address(token, name):
+    customer_id = get_customer_id(token)
+    if not frappe.db.exists(
+        "Dynamic Link",
+        {"parent": name, "link_doctype": "Customer", "link_name": customer_id},
+    ):
+        frappe.throw(frappe._("Address not found"))
+
+    frappe.delete_doc("Address", name, ignore_permissions=True)
+    return None
