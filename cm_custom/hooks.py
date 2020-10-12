@@ -157,9 +157,11 @@ after_migrate = ["cm_custom.install.after_migrate"]
 
 # Overriding Methods
 # ------------------------------
-4
+
 override_whitelisted_methods = {
-    "erpnext.stock.get_item_details.get_item_details": "cm_custom.overrides.get_item_details.get_item_details"
+    "erpnext.stock.get_item_details.get_item_details": "cm_custom.overrides.get_item_details.get_item_details",
+    "erpnext.stock.get_item_details.apply_price_list": "cm_custom.overrides.get_item_details.apply_price_list",
+    "erpnext.accounts.doctype.pricing_rule.pricing_rule.apply_pricing_rule": "cm_custom.overrides.pricing_rule.apply_pricing_rule",
 }
 
 # each overriding function accepts a `data` argument;
