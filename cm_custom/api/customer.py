@@ -45,7 +45,6 @@ def create(token, **kwargs):
     if not webapp_user:
         frappe.throw(frappe._("Site setup not complete"))
 
-    frappe.set_user(webapp_user)
     uid = decoded_token["uid"]
     customer_id = frappe.db.exists("Customer", {"cm_firebase_uid": uid})
     if customer_id:
@@ -56,7 +55,7 @@ def create(token, **kwargs):
         in [
             "customer_name",
             "mobile_no",
-            "email",
+            "email_id",
             "address_line1",
             "address_line2",
             "city",
@@ -67,26 +66,46 @@ def create(token, **kwargs):
         kwargs,
     )
 
-    doc = frappe.get_doc(
-        merge(
-            {
-                "doctype": "Customer",
-                "cm_firebase_uid": uid,
-                "cm_mobile_no": args.get("mobile_no"),
-                "customer_type": "Individual",
-                "customer_group": frappe.db.get_single_value(
-                    "Selling Settings", "customer_group"
-                ),
-                "territory": frappe.db.get_single_value(
-                    "Selling Settings", "territory"
-                ),
-            },
-            args,
-        )
-    ).insert()
-    auth.set_custom_user_claims(uid, {"customer": True}, app=app)
+    def insert_or_update():
+        existing = frappe.db.exists("Customer", {"cm_mobile_no": args.get("mobile_no")})
+        if existing:
+            doc = frappe.get_doc("Customer", existing)
+            doc.update(
+                {"customer_name": args.get("customer_name"), "cm_firebase_uid": uid}
+            )
+            if args.get("address_line1") and args.get("city"):
+                address = _create_address(existing, args)
+                doc.update({"customer_primary_address": address.get("name")})
+            print([args.get("email_id"), doc.customer_primary_contact])
+            if args.get("email_id") and doc.customer_primary_contact:
+                contact = frappe.get_doc("Contact", doc.customer_primary_contact)
+                contact.add_email(args.get("email_id"), autosave=True)
+            doc.save(ignore_permissions=True)
+            return doc
 
-    frappe.set_user(session_user)
+        frappe.set_user(webapp_user)
+        doc = frappe.get_doc(
+            merge(
+                {
+                    "doctype": "Customer",
+                    "cm_firebase_uid": uid,
+                    "cm_mobile_no": args.get("mobile_no"),
+                    "customer_type": "Individual",
+                    "customer_group": frappe.db.get_single_value(
+                        "Selling Settings", "customer_group"
+                    ),
+                    "territory": frappe.db.get_single_value(
+                        "Selling Settings", "territory"
+                    ),
+                },
+                args,
+            )
+        ).insert(ignore_permissions=True)
+        frappe.set_user(session_user)
+        return doc
+
+    doc = insert_or_update()
+    auth.set_custom_user_claims(uid, {"customer": True}, app=app)
     return keyfilter(lambda x: x in CUSTOMER_FIELDS, doc.as_dict())
 
 
@@ -184,12 +203,16 @@ def get_address(token, name):
 @handle_error
 def create_address(token, **kwargs):
     customer_id = get_customer_id(token)
+    return _create_address(customer_id, kwargs)
+
+
+def _create_address(customer, args):
     fields = ["address_line1", "address_line2", "city", "state", "country", "pincode"]
-    args = keyfilter(lambda x: x in fields, kwargs)
+    _args = keyfilter(lambda x: x in fields, args)
     doc = frappe.get_doc(
-        merge({"doctype": "Address", "address_type": "Billing"}, args,)
+        merge({"doctype": "Address", "address_type": "Billing"}, _args)
     )
-    doc.append("links", {"link_doctype": "Customer", "link_name": customer_id})
+    doc.append("links", {"link_doctype": "Customer", "link_name": customer})
     doc.insert(ignore_permissions=True)
     return keyfilter(lambda x: x in ["name"] + fields, doc.as_dict())
 
