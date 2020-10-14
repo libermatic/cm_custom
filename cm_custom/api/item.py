@@ -352,3 +352,78 @@ def _get_args(field_filters=None, attribute_filters=None, search=None):
         "attribute_filters": frappe.parse_json(attribute_filters),
         "search": search,
     }
+
+
+@frappe.whitelist(allow_guest=True)
+@handle_error
+def get_recent_items():
+    price_list = frappe.db.get_single_value("Shopping Cart Settings", "price_list")
+    products_per_page = frappe.db.get_single_value(
+        "Products Settings", "products_per_page"
+    )
+    items = frappe.db.sql(
+        """
+            SELECT
+                name, item_name, item_group, route, has_variants,
+                thumbnail, image, website_image,
+                description, web_long_description
+            FROM `tabItem`
+            WHERE show_in_website = 1
+            ORDER BY modified DESC
+            LIMIT %(products_per_page)s
+        """,
+        values={"products_per_page": products_per_page},
+        as_dict=1,
+    )
+    item_prices = _get_item_prices(price_list, items) if items else {}
+    get_rates = _rate_getter(price_list, item_prices)
+
+    return [
+        merge(
+            x,
+            {
+                "route": transform_route(x),
+                "description": frappe.utils.strip_html_tags(x.get("description") or ""),
+            },
+            get_rates(x.get("name")),
+        )
+        for x in items
+    ]
+
+
+@frappe.whitelist(allow_guest=True)
+@handle_error
+def get_featured_items():
+    homepage = frappe.get_single("Homepage")
+
+    if not homepage.products:
+        return {"items": []}
+
+    price_list = frappe.db.get_single_value("Shopping Cart Settings", "price_list")
+    items = frappe.db.sql(
+        """
+            SELECT
+                name, item_name, item_group, route, has_variants,
+                thumbnail, image, website_image,
+                description, web_long_description
+            FROM `tabItem`
+            WHERE show_in_website = 1 AND name IN %(featured)s
+            ORDER BY modified DESC
+        """,
+        values={"featured": [x.item_code for x in homepage.products]},
+        as_dict=1,
+    )
+    item_prices = _get_item_prices(price_list, items) if items else {}
+    get_rates = _rate_getter(price_list, item_prices)
+
+    return [
+        merge(
+            x,
+            {
+                "route": transform_route(x),
+                "description": frappe.utils.strip_html_tags(x.get("description") or ""),
+            },
+            get_rates(x.get("name")),
+        )
+        for x in items
+    ]
