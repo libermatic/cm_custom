@@ -397,7 +397,7 @@ def get_featured_items():
     homepage = frappe.get_single("Homepage")
 
     if not homepage.products:
-        return {"items": []}
+        return []
 
     price_list = frappe.db.get_single_value("Shopping Cart Settings", "price_list")
     items = frappe.db.sql(
