@@ -1,0 +1,13 @@
+export default function website_slideshow() {
+  return {
+    setup: function (frm) {
+      console.log('asd');
+      frm.set_query('cm_ref_doctype', 'slideshow_items', (doc) => ({
+        filters: { name: ['in', ['Item Group', 'Item']] },
+      }));
+      frm.set_query('cm_ref_docname', 'slideshow_items', (doc) => ({
+        filters: { show_in_website: 1 },
+      }));
+    },
+  };
+}

@@ -17,7 +17,7 @@ fixtures = [
         "doctype": "Custom Field",
         "filters": {
             "fieldname": ("like", "cm_%"),
-            "dt": ("in", ["XZ Report", "Customer"]),
+            "dt": ("in", ["XZ Report", "Customer", "Website Slideshow Item",]),
         },
     },
     {
