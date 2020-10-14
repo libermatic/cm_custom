@@ -42,3 +42,20 @@ def get_slideshow():
             ],
         )
     ]
+
+
+@frappe.whitelist(allow_guest=True)
+@handle_error
+def get_settings():
+    ahong_settings = frappe.get_single("Ahong eCommerce Settings")
+    website_settings = get_website_settings()
+
+    return merge(
+        keyfilter(lambda x: x in ["copyright", "footer_address"], website_settings),
+        {
+            "privacy": bool(ahong_settings.privacy),
+            "terms": bool(ahong_settings.terms),
+            "show_about_us": bool(ahong_settings.show_about_us),
+            "hide_build_info": bool(ahong_settings.hide_build_info),
+        },
+    )

@@ -4,7 +4,13 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "webapp_user"
+  "webapp_user",
+  "section_break_2",
+  "privacy",
+  "terms",
+  "column_break_5",
+  "show_about_us",
+  "hide_build_info"
  ],
  "fields": [
   {
@@ -14,10 +20,42 @@
    "label": "Default WebApp User",
    "options": "User",
    "reqd": 1
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "privacy",
+   "fieldtype": "Link",
+   "label": "Privacy",
+   "options": "Terms and Conditions"
+  },
+  {
+   "fieldname": "terms",
+   "fieldtype": "Link",
+   "label": "Terms",
+   "options": "Terms and Conditions"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "show_about_us",
+   "fieldtype": "Check",
+   "label": "Show About Us"
+  },
+  {
+   "default": "0",
+   "fieldname": "hide_build_info",
+   "fieldtype": "Check",
+   "label": "Hide Build Info"
   }
  ],
  "issingle": 1,
- "modified": "2020-08-31 04:14:37.938004",
+ "modified": "2020-10-15 00:01:29.060778",
  "modified_by": "Administrator",
  "module": "Ahong eCommerce",
  "name": "Ahong eCommerce Settings",
