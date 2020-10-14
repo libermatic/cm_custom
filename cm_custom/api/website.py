@@ -59,3 +59,22 @@ def get_settings():
             "hide_build_info": bool(ahong_settings.hide_build_info),
         },
     )
+
+
+@frappe.whitelist(allow_guest=True)
+@handle_error
+def get_doc_content(content_type):
+    if content_type == "about":
+        about = frappe.get_cached_doc("About Us Settings")
+        return {"content": about.company_introduction}
+
+    if content_type in ["privacy", "terms"]:
+        settings = frappe.get_single("Ahong eCommerce Settings")
+        if settings.get(content_type):
+            content = frappe.get_cached_value(
+                "Terms and Conditions", settings.get(content_type), "terms"
+            )
+            return {"content": content}
+
+    return {"content": None}
+
