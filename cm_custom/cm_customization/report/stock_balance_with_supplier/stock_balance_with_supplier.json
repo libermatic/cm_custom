@@ -1,0 +1,28 @@
+{
+ "add_total_row": 1,
+ "creation": "2020-11-24 18:09:30.916803",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "idx": 0,
+ "is_standard": "Yes",
+ "letter_head": "Letter Head-AAK",
+ "modified": "2020-11-26 22:57:32.513199",
+ "modified_by": "Administrator",
+ "module": "CM Customization",
+ "name": "Stock Balance with Supplier",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Bin",
+ "report_name": "Stock Balance with Supplier",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Accounts Manager"
+  }
+ ]
+}
