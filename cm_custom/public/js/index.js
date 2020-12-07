@@ -10,7 +10,7 @@ function get_doctype(import_name) {
     .join(' ');
 }
 
-const __version__ = '0.2.2';
+const __version__ = '0.2.3';
 
 frappe.provide('cm_custom');
 cm_custom = { __version__, reports, extensions };
