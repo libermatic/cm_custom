@@ -17,7 +17,15 @@ fixtures = [
         "doctype": "Custom Field",
         "filters": {
             "fieldname": ("like", "cm_%"),
-            "dt": ("in", ["XZ Report", "Customer", "Website Slideshow Item",]),
+            "dt": (
+                "in",
+                [
+                    "XZ Report",
+                    "Customer",
+                    "Website Slideshow Item",
+                    "Stock Entry Detail",
+                ],
+            ),
         },
     },
     {
@@ -125,6 +133,9 @@ doc_events = {
         "set_missing_values": "cm_custom.doc_events.sales_invoice.set_missing_values",
     },
     "XZ Report": {"before_save": "cm_custom.doc_events.xz_report.before_save"},
+    "Stock Entry": {
+        "before_validate": "cm_custom.doc_events.stock_entry.before_validate"
+    },
 }
 
 # Scheduled Tasks
