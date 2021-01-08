@@ -18,7 +18,7 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 
 @frappe.whitelist()
 def apply_price_list(args, as_doc=False):
-    from erpnext.stock.get_item_details import apply_price_list
+    from posx.overrides.get_item_details import apply_price_list
 
     def proc_args(args):
         if args.get("is_return"):
