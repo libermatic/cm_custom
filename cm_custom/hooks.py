@@ -131,6 +131,7 @@ doc_events = {
     "Customer": {"before_save": "cm_custom.doc_events.customer.before_insert"},
     "Sales Invoice": {
         "set_missing_values": "cm_custom.doc_events.sales_invoice.set_missing_values",
+        "validate": "cm_custom.doc_events.sales_invoice.validate",
         "before_save": "cm_custom.doc_events.sales_invoice.before_save",
     },
     "XZ Report": {"before_save": "cm_custom.doc_events.xz_report.before_save"},
