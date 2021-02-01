@@ -10,12 +10,11 @@ def before_validate(doc, method):
         and doc._action == "submit"
     ):
         for item in doc.items:
-            if item.t_warehouse:
-                item.px_mfg_date = item.cm_mfg_date
-                item.px_exp_date = item.cm_exp_date
-                item.px_batch_price_list_rate = item.cm_batch_price_list_rate
-            else:
+            if not item.t_warehouse:
                 item.cm_mfg_date = None
                 item.cm_exp_date = None
                 item.cm_batch_price_list_rate = None
+            item.px_mfg_date = item.cm_mfg_date
+            item.px_exp_date = item.cm_exp_date
+            item.px_batch_price_list_rate = item.cm_batch_price_list_rate
         set_or_create_batch(doc, method)
