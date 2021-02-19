@@ -19,3 +19,19 @@ Object.keys(cscripts).forEach((import_name) => {
   const get_handler = cscripts[import_name];
   frappe.ui.form.on(get_doctype(import_name), get_handler());
 });
+
+$(document).ajaxError(function (_event, jqXHR, ajaxSettings, thrownError) {
+  if (
+    jqXHR.status === 400 &&
+    jqXHR.responseJSON &&
+    jqXHR.responseJSON.exc_type === 'CSRFTokenError'
+  ) {
+    frappe.msgprint(
+      __(`
+        CSRF Token not invalid.
+        Subsequent requests will fail.
+        Manually browser <strong>REFRESH</strong> required to recover.
+      `)
+    );
+  }
+});
