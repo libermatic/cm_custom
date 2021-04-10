@@ -71,7 +71,7 @@ app_include_js = ["/assets/js/cm_custom.min.js"]
 # web_include_js = "/assets/cm_custom/js/cm_custom.js"
 
 # include js in page
-page_js = {"point-of-sale": "public/includes/point_of_sale.js"}
+# page_js = {"point-of-sale": "public/includes/point_of_sale.js"}
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
@@ -183,4 +183,3 @@ override_whitelisted_methods = {
 # override_doctype_dashboards = {
 # 	"Task": "cm_custom.task.get_dashboard_data"
 # }
-
