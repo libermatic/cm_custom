@@ -1,3 +1,5 @@
 {
-  "js/cm_custom.min.js": ["public/js/index.js"]
+  "js/cm_custom.min.js": ["public/js/index.js"],
+  "js/cm_custom-pos.min.js": ["public/js/extensions/pos.js"],
+  "css/cm_custom-pos.min.css": ["public/scss/pos.scss"]
 }

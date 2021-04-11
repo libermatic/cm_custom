@@ -1,0 +1,36 @@
+// modified_item_view: section layout widths
+.point-of-sale-app {
+  > .items-selector {
+    grid-column: span 5 / span 5;
+  }
+  > .customer-cart-container {
+    grid-column: span 5 / span 5;
+  }
+  > .payment-container {
+    grid-column: span 5 / span 5;
+  }
+}
+
+// 3-col ItemSelector
+.point-of-sale-app {
+  > .items-selector {
+    > .items-container {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+}
+
+// remove shadows in inner tiles
+.point-of-sale-app {
+  > .items-selector {
+    > .items-container {
+      > .item-wrapper {
+        box-shadow: none;
+        border: 1px solid var(--border-color);
+        &:hover {
+          border-color: var(--dark-border-color);
+        }
+      }
+    }
+  }
+}
