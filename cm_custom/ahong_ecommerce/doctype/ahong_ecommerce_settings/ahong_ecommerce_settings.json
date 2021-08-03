@@ -10,7 +10,9 @@
   "terms",
   "column_break_5",
   "show_about_us",
-  "hide_build_info"
+  "hide_build_info",
+  "section_break_8",
+  "home_item_groups"
  ],
  "fields": [
   {
@@ -52,10 +54,20 @@
    "fieldname": "hide_build_info",
    "fieldtype": "Check",
    "label": "Hide Build Info"
+  },
+  {
+   "fieldname": "section_break_8",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "home_item_groups",
+   "fieldtype": "Table",
+   "label": "Home Item Groups",
+   "options": "Website Item Group"
   }
  ],
  "issingle": 1,
- "modified": "2020-10-15 00:01:29.060778",
+ "modified": "2021-08-03 19:02:30.816998",
  "modified_by": "Administrator",
  "module": "Ahong eCommerce",
  "name": "Ahong eCommerce Settings",

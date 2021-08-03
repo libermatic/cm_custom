@@ -17,10 +17,24 @@ ITEM_GROUP_FIELDS = [
 
 @frappe.whitelist(allow_guest=True)
 @handle_error
-def get_all():
+def get_all(list_type="all"):
+    filters = {"show_in_website": 1}
+    if type == "home":
+        home_item_groups = [
+            x
+            for (x,) in frappe.get_all(
+                "Website Item Group",
+                fields=["item_group"],
+                filters={"parent": "Ahong eCommerce Settings"},
+                as_list=1,
+            )
+        ]
+        if home_item_groups:
+            filters.update({"name": ("in", home_item_groups)})
+
     groups = frappe.get_all(
         "Item Group",
-        filters={"show_in_website": 1},
+        filters=filters,
         fields=ITEM_GROUP_FIELDS,
         order_by="lft, rgt",
     )
