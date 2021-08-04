@@ -58,8 +58,7 @@ def get_list(page="1", field_filters=None, attribute_filters=None, search=None):
     other_fields = get_other_fields(items) if items else {}
     item_prices = _get_item_prices(price_list, items) if items else {}
     get_rates = _rate_getter(price_list, item_prices)
-
-    stock_qtys_by_item = _get_stock_by_item(items)
+    stock_qtys_by_item = _get_stock_by_item(items) if items else {}
 
     return [
         merge(
@@ -383,7 +382,7 @@ def get_recent_items():
     )
     item_prices = _get_item_prices(price_list, items) if items else {}
     get_rates = _rate_getter(price_list, item_prices)
-    stock_qtys_by_item = _get_stock_by_item(items)
+    stock_qtys_by_item = _get_stock_by_item(items) if items else {}
 
     return [
         merge(
@@ -423,7 +422,7 @@ def get_featured_items():
     )
     item_prices = _get_item_prices(price_list, items) if items else {}
     get_rates = _rate_getter(price_list, item_prices)
-    stock_qtys_by_item = _get_stock_by_item(items)
+    stock_qtys_by_item = _get_stock_by_item(items) if items else {}
 
     return [
         merge(
@@ -455,31 +454,26 @@ def _get_stock_qty(name):
 
 def _get_stock_by_item(items):
     warehouse = frappe.db.get_single_value("Ahong eCommerce Settings", "warehouse")
-    print([x.get("item_code") for x in items])
-    return (
-        {
-            x["item_code"]: x["stock_qty"]
-            for x in frappe.db.sql(
-                """
-                    SELECT b.item_code,
-                        GREATEST(
-                            b.actual_qty - b.reserved_qty - b.reserved_qty_for_production - b.reserved_qty_for_sub_contract,
-                            0
-                        ) / IFNULL(C.conversion_factor, 1) AS stock_qty
-                    FROM `tabBin` AS b
-                    INNER JOIN `tabItem` AS i
-                        ON b.item_code = i.item_code
-                    LEFT JOIN `tabUOM Conversion Detail` C
-                        ON i.sales_uom = C.uom AND C.parent = i.item_code
-                    WHERE b.item_code IN %(item_codes)s AND b.warehouse=%(warehouse)s
-                """,
-                values={
-                    "item_codes": [x.get("name") for x in items],
-                    "warehouse": warehouse,
-                },
-                as_dict=1,
-            )
-        }
-        if items
-        else {}
-    )
+    return {
+        x["item_code"]: x["stock_qty"]
+        for x in frappe.db.sql(
+            """
+                SELECT b.item_code,
+                    GREATEST(
+                        b.actual_qty - b.reserved_qty - b.reserved_qty_for_production - b.reserved_qty_for_sub_contract,
+                        0
+                    ) / IFNULL(C.conversion_factor, 1) AS stock_qty
+                FROM `tabBin` AS b
+                INNER JOIN `tabItem` AS i
+                    ON b.item_code = i.item_code
+                LEFT JOIN `tabUOM Conversion Detail` C
+                    ON i.sales_uom = C.uom AND C.parent = i.item_code
+                WHERE b.item_code IN %(item_codes)s AND b.warehouse=%(warehouse)s
+            """,
+            values={
+                "item_codes": [x.get("name") for x in items],
+                "warehouse": warehouse,
+            },
+            as_dict=1,
+        )
+    }
