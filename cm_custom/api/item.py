@@ -22,7 +22,7 @@ from erpnext.portal.product_configurator.utils import (
 )
 from erpnext.shopping_cart.product_info import get_product_info_for_website
 from erpnext.accounts.doctype.sales_invoice.pos import get_child_nodes
-from erpnext.utilities.product import get_price
+from erpnext.utilities.product import get_price, get_qty_in_stock
 
 from cm_custom.api.utils import handle_error, transform_route
 
@@ -59,15 +59,18 @@ def get_list(page="1", field_filters=None, attribute_filters=None, search=None):
     item_prices = _get_item_prices(price_list, items) if items else {}
     get_rates = _rate_getter(price_list, item_prices)
 
+    stock_qtys_by_item = _get_stock_by_item(items)
+
     return [
         merge(
             x,
+            get_rates(x.get("name")),
+            {k: other_fields.get(x.get("name"), {}).get(k) for k in other_fieldnames},
             {
                 "route": transform_route(x),
                 "description": frappe.utils.strip_html_tags(x.get("description") or ""),
+                "stock_qty": stock_qtys_by_item.get(x.get("name"), 0),
             },
-            get_rates(x.get("name")),
-            {k: other_fields.get(x.get("name"), {}).get(k) for k in other_fieldnames},
         )
         for x in items
     ]
@@ -209,13 +212,13 @@ def get(name=None, route=None):
 
 @frappe.whitelist(allow_guest=True)
 @handle_error
-def get_product_info(name=None, route=None, token=None):
+def get_product_info(name=None, item_code=None, route=None, token=None):
     # todo: first set user from token
     frappe.set_user(
         frappe.get_cached_value("Ahong eCommerce Settings", None, "webapp_user")
     )
 
-    item_code = _get_name(name, route)
+    item_code = item_code or _get_name(name, route)
 
     if not item_code:
         frappe.throw(frappe._("Item does not exist at this route"))
@@ -223,11 +226,14 @@ def get_product_info(name=None, route=None, token=None):
     item_for_website = get_product_info_for_website(
         item_code, skip_quotation_creation=True
     )
+    stock_status = _get_stock_qty(item_code)
+
     return {
         "price": keyfilter(
             lambda x: x in ["currency", "price_list_rate"],
             item_for_website.get("product_info", {}).get("price", {}),
-        )
+        ),
+        "stock_qty": stock_status.get("stock_qty"),
     }
 
 
@@ -253,7 +259,7 @@ def get_media(name=None, route=None):
         return [x.get("image") for x in doc.slideshow_items if x.get("image")]
 
     variant_of = frappe.get_cached_value("Item", item_code, "variant_of")
-    images = get_values(item_code,)
+    images = get_values(item_code)
     template_images = get_values(variant_of) if variant_of else {}
 
     def get_image(field):
@@ -377,15 +383,17 @@ def get_recent_items():
     )
     item_prices = _get_item_prices(price_list, items) if items else {}
     get_rates = _rate_getter(price_list, item_prices)
+    stock_qtys_by_item = _get_stock_by_item(items)
 
     return [
         merge(
             x,
+            get_rates(x.get("name")),
             {
                 "route": transform_route(x),
                 "description": frappe.utils.strip_html_tags(x.get("description") or ""),
+                "stock_qty": stock_qtys_by_item.get(x.get("name"), 0),
             },
-            get_rates(x.get("name")),
         )
         for x in items
     ]
@@ -415,15 +423,63 @@ def get_featured_items():
     )
     item_prices = _get_item_prices(price_list, items) if items else {}
     get_rates = _rate_getter(price_list, item_prices)
+    stock_qtys_by_item = _get_stock_by_item(items)
 
     return [
         merge(
             x,
+            get_rates(x.get("name")),
             {
                 "route": transform_route(x),
                 "description": frappe.utils.strip_html_tags(x.get("description") or ""),
+                "stock_qty": stock_qtys_by_item.get(x.get("name"), 0),
             },
-            get_rates(x.get("name")),
         )
         for x in items
     ]
+
+
+def _get_stock_qty(name):
+    stock_status = get_qty_in_stock(
+        name,
+        "website_warehouse",
+        frappe.db.get_single_value("Ahong eCommerce Settings", "warehouse"),
+    )
+
+    return {
+        "in_stock": stock_status.in_stock,
+        "stock_qty": stock_status.stock_qty[0][0] if stock_status.stock_qty else 0,
+        "is_stock_item": stock_status.is_stock_item,
+    }
+
+
+def _get_stock_by_item(items):
+    warehouse = frappe.db.get_single_value("Ahong eCommerce Settings", "warehouse")
+    print([x.get("item_code") for x in items])
+    return (
+        {
+            x["item_code"]: x["stock_qty"]
+            for x in frappe.db.sql(
+                """
+                    SELECT b.item_code,
+                        GREATEST(
+                            b.actual_qty - b.reserved_qty - b.reserved_qty_for_production - b.reserved_qty_for_sub_contract,
+                            0
+                        ) / IFNULL(C.conversion_factor, 1) AS stock_qty
+                    FROM `tabBin` AS b
+                    INNER JOIN `tabItem` AS i
+                        ON b.item_code = i.item_code
+                    LEFT JOIN `tabUOM Conversion Detail` C
+                        ON i.sales_uom = C.uom AND C.parent = i.item_code
+                    WHERE b.item_code IN %(item_codes)s AND b.warehouse=%(warehouse)s
+                """,
+                values={
+                    "item_codes": [x.get("name") for x in items],
+                    "warehouse": warehouse,
+                },
+                as_dict=1,
+            )
+        }
+        if items
+        else {}
+    )

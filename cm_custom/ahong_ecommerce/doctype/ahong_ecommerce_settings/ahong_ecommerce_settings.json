@@ -5,6 +5,8 @@
  "engine": "InnoDB",
  "field_order": [
   "webapp_user",
+  "column_break_2",
+  "warehouse",
   "section_break_2",
   "privacy",
   "terms",
@@ -64,10 +66,20 @@
    "fieldtype": "Table",
    "label": "Home Item Groups",
    "options": "Website Item Group"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
   }
  ],
  "issingle": 1,
- "modified": "2021-08-03 19:02:30.816998",
+ "modified": "2021-08-03 22:43:19.331305",
  "modified_by": "Administrator",
  "module": "Ahong eCommerce",
  "name": "Ahong eCommerce Settings",
