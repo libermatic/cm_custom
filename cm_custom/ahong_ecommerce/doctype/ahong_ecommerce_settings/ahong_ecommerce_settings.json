@@ -6,7 +6,9 @@
  "field_order": [
   "webapp_user",
   "column_break_2",
+  "company",
   "warehouse",
+  "taxes_and_charges",
   "section_break_2",
   "privacy",
   "terms",
@@ -76,10 +78,22 @@
    "fieldtype": "Link",
    "label": "Warehouse",
    "options": "Warehouse"
+  },
+  {
+   "fieldname": "taxes_and_charges",
+   "fieldtype": "Link",
+   "label": "Taxes and Charges Template",
+   "options": "Sales Taxes and Charges Template"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "issingle": 1,
- "modified": "2021-08-03 22:43:19.331305",
+ "modified": "2021-08-04 15:59:23.894020",
  "modified_by": "Administrator",
  "module": "Ahong eCommerce",
  "name": "Ahong eCommerce Settings",

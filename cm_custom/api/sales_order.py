@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from erpnext.accounts.doctype.tax_rule.tax_rule import get_tax_template
 import frappe
 import json
 from toolz import keyfilter, merge
@@ -21,7 +22,8 @@ def make(token, **kwargs):
     frappe.set_user(webapp_user)
 
     doc = _make_sales_order(customer_id, **kwargs)
-    doc.calculate_taxes_and_totals()
+    doc.run_method("calculate_taxes_and_totals")
+    doc.run_method("set_taxes")
 
     frappe.set_user(session_user)
     return _get_formatted_sales_order(doc)
@@ -49,32 +51,42 @@ def create(token, **kwargs):
 
 
 def _make_sales_order(customer_id, **kwargs):
+    settings = frappe.get_single("Ahong eCommerce Settings")
     args = keyfilter(lambda x: x in ["transaction_date", "customer_address"], kwargs)
 
     doc = frappe.get_doc(
         merge(
             {
                 "doctype": "Sales Order",
+                "status": "Draft",
+                "docstatus": 0,
+                "__islocal": 1,
                 "customer": customer_id,
                 "order_type": "Shopping Cart",
-                "company": frappe.defaults.get_user_default("company"),
+                "company": settings.company
+                or frappe.defaults.get_user_default("company"),
+                "delivery_date": args.get("transaction_date"),
                 "currency": frappe.defaults.get_user_default("currency"),
                 "selling_price_list": frappe.get_cached_value(
                     "Selling Settings", None, "selling_price_list"
                 ),
+                "taxes_and_charges": settings.taxes_and_charges,
             },
             args,
         )
     )
 
-    warehouse = frappe.get_cached_value("Stock Settings", None, "default_warehouse")
     for item_args in json.loads(kwargs.get("items", "[]")):
         doc.append(
             "items",
             merge(
                 keyfilter(lambda x: x in ["item_code", "qty", "rate"], item_args),
                 {
-                    "warehouse": warehouse,
+                    "delivery_date": args.get("transaction_date"),
+                    "warehouse": settings.warehouse
+                    or frappe.get_cached_value(
+                        "Stock Settings", None, "default_warehouse"
+                    ),
                     "uom": frappe.get_cached_value(
                         "Item", item_args.get("item_code"), "stock_uom"
                     ),
@@ -82,7 +94,8 @@ def _make_sales_order(customer_id, **kwargs):
             ),
         )
 
-    doc.set_missing_values()
+    doc.flags.ignore_permissions = True
+    doc.run_method("set_missing_values")
     return doc
 
 
@@ -95,6 +108,7 @@ def _get_formatted_sales_order(doc):
                 "transaction_date",
                 "delivery_date",
                 "total",
+                "total_taxes_and_charges",
                 "grand_total",
                 "rounding_adjustment",
                 "rounded_total",
@@ -120,7 +134,11 @@ def _get_formatted_sales_order(doc):
                 for x in doc.items
             ],
             "taxes": [
-                keyfilter(lambda x: x in ["description", "tax_amount"], x.as_dict())
+                keyfilter(
+                    lambda x: x
+                    in ["description", "tax_amount", "included_in_print_rate"],
+                    x.as_dict(),
+                )
                 for x in doc.taxes
             ],
         },
