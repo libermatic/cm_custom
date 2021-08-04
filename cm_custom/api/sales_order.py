@@ -2,7 +2,7 @@
 from erpnext.accounts.doctype.tax_rule.tax_rule import get_tax_template
 import frappe
 import json
-from toolz import keyfilter, merge
+from toolz import keyfilter, merge, compose, groupby
 
 from cm_custom.api.utils import handle_error
 from cm_custom.api.customer import get_customer_id
@@ -99,7 +99,97 @@ def _make_sales_order(customer_id, **kwargs):
     return doc
 
 
-def _get_formatted_sales_order(doc):
+@frappe.whitelist(allow_guest=True)
+@handle_error
+def get_list(token, page="1", page_length="10"):
+    customer_id = get_customer_id(token)
+
+    session_user = frappe.session.user
+    webapp_user = frappe.get_cached_value(
+        "Ahong eCommerce Settings", None, "webapp_user"
+    )
+    if not webapp_user:
+        frappe.throw(frappe._("Site setup not complete"))
+    frappe.set_user(webapp_user)
+
+    get_count = compose(
+        lambda x: x[0][0],
+        lambda x: frappe.get_all(
+            "Sales Order",
+            fields=["count(name)"],
+            filters={"customer": x},
+            as_list=1,
+        ),
+    )
+
+    orders = frappe.db.get_list(
+        "Sales Order",
+        fields="*",
+        filters={
+            "customer": customer_id,
+            "docstatus": (">", 0),
+        },
+        limit_start=(frappe.utils.cint(page) - 1) * frappe.utils.cint(page_length),
+        limit_page_length=frappe.utils.cint(page_length),
+        order_by="modified desc",
+    )
+    order_ids = [x.get("name") for x in orders]
+    order_items_by_order = (
+        groupby(
+            "parent",
+            frappe.get_all(
+                "Sales Order Item",
+                fields="*",
+                filters={
+                    "parent": ("in", order_ids),
+                },
+            ),
+        )
+        if order_ids
+        else {}
+    )
+    order_taxes_by_order = (
+        groupby(
+            "parent",
+            frappe.get_all(
+                "Sales Taxes and Charges",
+                fields="*",
+                filters={
+                    "parent": ("in", order_ids),
+                },
+            ),
+        )
+        if order_ids
+        else {}
+    )
+
+    count = get_count(customer_id)
+    items = [
+        _get_formatted_sales_order(
+            merge(
+                x,
+                {
+                    "items": order_items_by_order.get(x.get("name")) or [],
+                    "taxes": order_taxes_by_order.get(x.get("name")) or [],
+                },
+            ),
+            is_dict=True,
+        )
+        for x in orders
+    ]
+
+    print(orders)
+    frappe.set_user(session_user)
+    return {
+        "count": count,
+        "pages": frappe.utils.ceil(count / frappe.utils.cint(page_length)),
+        "items": items,
+    }
+
+
+def _get_formatted_sales_order(doc, is_dict=False):
+    _doc = doc if is_dict else doc.as_dict()
+
     return merge(
         keyfilter(
             lambda x: x
@@ -112,34 +202,38 @@ def _get_formatted_sales_order(doc):
                 "grand_total",
                 "rounding_adjustment",
                 "rounded_total",
+                "status",
+                "delivery_status",
             ],
-            doc.as_dict(),
+            _doc,
         ),
         {
             "items": [
                 keyfilter(
                     lambda x: x
                     in [
+                        "name",
                         "item_code",
                         "item_name",
                         "item_group",
+                        "image",
                         "qty",
                         "price_list_rate",
                         "rate",
                         "amount",
                         "net_amount",
                     ],
-                    x.as_dict(),
+                    x,
                 )
-                for x in doc.items
+                for x in _doc.get("items")
             ],
             "taxes": [
                 keyfilter(
                     lambda x: x
-                    in ["description", "tax_amount", "included_in_print_rate"],
-                    x.as_dict(),
+                    in ["name", "description", "tax_amount", "included_in_print_rate"],
+                    x,
                 )
-                for x in doc.taxes
+                for x in _doc.get("taxes")
             ],
         },
     )
