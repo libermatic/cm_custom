@@ -437,6 +437,24 @@ def get_featured_items():
         for x in items
     ]
 
+@frappe.whitelist(allow_guest=True)
+def get_next_attribute_and_values(item_code, selected_attributes):
+    from erpnext.portal.product_configurator.utils import get_next_attribute_and_values
+
+    session_user = frappe.session.user
+    webapp_user = frappe.get_cached_value(
+        "Ahong eCommerce Settings", None, "webapp_user"
+    )
+    if not webapp_user:
+        frappe.throw(frappe._("Site setup not complete"))
+    frappe.set_user(webapp_user)
+
+    result = get_next_attribute_and_values(item_code, selected_attributes)
+
+    frappe.set_user(session_user)
+
+    return result
+
 
 def _get_stock_qty(name):
     stock_status = get_qty_in_stock(
