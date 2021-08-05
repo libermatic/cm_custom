@@ -225,14 +225,14 @@ def get_product_info(name=None, item_code=None, route=None, token=None):
     item_for_website = get_product_info_for_website(
         item_code, skip_quotation_creation=True
     )
-    stock_status = _get_stock_qty(item_code)
+    stock_qtys_by_item = _get_stock_by_item([{"name": item_code}])
 
     return {
         "price": keyfilter(
             lambda x: x in ["currency", "price_list_rate"],
             item_for_website.get("product_info", {}).get("price", {}),
         ),
-        "stock_qty": stock_status.get("stock_qty"),
+        "stock_qty": stock_qtys_by_item.get(item_code, 0),
     }
 
 
@@ -437,6 +437,7 @@ def get_featured_items():
         for x in items
     ]
 
+
 @frappe.whitelist(allow_guest=True)
 def get_next_attribute_and_values(item_code, selected_attributes):
     from erpnext.portal.product_configurator.utils import get_next_attribute_and_values
@@ -456,42 +457,37 @@ def get_next_attribute_and_values(item_code, selected_attributes):
     return result
 
 
-def _get_stock_qty(name):
-    stock_status = get_qty_in_stock(
-        name,
-        "website_warehouse",
-        frappe.db.get_single_value("Ahong eCommerce Settings", "warehouse"),
-    )
-
-    return {
-        "in_stock": stock_status.in_stock,
-        "stock_qty": stock_status.stock_qty[0][0] if stock_status.stock_qty else 0,
-        "is_stock_item": stock_status.is_stock_item,
-    }
-
-
 def _get_stock_by_item(items):
-    warehouse = frappe.db.get_single_value("Ahong eCommerce Settings", "warehouse")
+    warehouses = [
+        x.get("name")
+        for x in get_child_nodes(
+            "Warehouse",
+            frappe.db.get_single_value("Ahong eCommerce Settings", "warehouse"),
+        )
+    ]
+    if not warehouses:
+        return {}
+
     return {
-        x["item_code"]: x["stock_qty"]
-        for x in frappe.db.sql(
+        item_code: stock_qty
+        for item_code, stock_qty in frappe.db.sql(
             """
                 SELECT b.item_code,
                     GREATEST(
                         b.actual_qty - b.reserved_qty - b.reserved_qty_for_production - b.reserved_qty_for_sub_contract,
                         0
-                    ) / IFNULL(C.conversion_factor, 1) AS stock_qty
+                    ) / IFNULL(C.conversion_factor, 1)
                 FROM `tabBin` AS b
                 INNER JOIN `tabItem` AS i
                     ON b.item_code = i.item_code
                 LEFT JOIN `tabUOM Conversion Detail` C
                     ON i.sales_uom = C.uom AND C.parent = i.item_code
-                WHERE b.item_code IN %(item_codes)s AND b.warehouse=%(warehouse)s
+                WHERE b.item_code IN %(item_codes)s AND b.warehouse in %(warehouses)s
             """,
             values={
                 "item_codes": [x.get("name") for x in items],
-                "warehouse": warehouse,
+                "warehouses": warehouses,
             },
-            as_dict=1,
+            as_list=1,
         )
     }
