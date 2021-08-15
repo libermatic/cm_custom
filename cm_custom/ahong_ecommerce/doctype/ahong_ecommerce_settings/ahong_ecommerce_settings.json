@@ -16,7 +16,9 @@
   "show_about_us",
   "hide_build_info",
   "section_break_8",
-  "home_item_groups"
+  "home_item_groups",
+  "column_break_14",
+  "section_item_groups"
  ],
  "fields": [
   {
@@ -66,7 +68,7 @@
   {
    "fieldname": "home_item_groups",
    "fieldtype": "Table",
-   "label": "Home Item Groups",
+   "label": "Featured Item Groups",
    "options": "Website Item Group"
   },
   {
@@ -90,10 +92,20 @@
    "fieldtype": "Link",
    "label": "Company",
    "options": "Company"
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_item_groups",
+   "fieldtype": "Table",
+   "label": "Section Item Groups",
+   "options": "Website Item Group"
   }
  ],
  "issingle": 1,
- "modified": "2021-08-04 15:59:23.894020",
+ "modified": "2021-08-15 17:28:05.082359",
  "modified_by": "Administrator",
  "module": "Ahong eCommerce",
  "name": "Ahong eCommerce Settings",
