@@ -69,8 +69,6 @@ def _get_section_groups():
         )
     ]
 
-    print(section_item_groups)
-
     group_ids = [x.get("category") for x in section_item_groups] + [
         y
         for x in section_item_groups
@@ -79,7 +77,7 @@ def _get_section_groups():
 
     groups_by_id = (
         {
-            x.get("name"): x
+            x.get("name"): {**x, "route": transform_route(x)}
             for x in frappe.get_all(
                 "Item Group",
                 filters={"name": ("in", group_ids), "show_in_website": 1},
