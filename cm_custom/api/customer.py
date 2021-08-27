@@ -145,6 +145,7 @@ def list_addresses(token, page="1", page_length="10"):
                 a.address_line1 AS address_line1,
                 a.address_line2 AS address_line2,
                 a.city AS city,
+                a.county AS county,
                 a.state AS state,
                 a.country AS country,
                 a.pincode AS pincode
@@ -226,6 +227,10 @@ def delete_address(token, name):
         {"parent": name, "link_doctype": "Customer", "link_name": customer_id},
     ):
         frappe.throw(frappe._("Address not found"))
+        
+    try:
+        frappe.delete_doc("Address", name, ignore_permissions=True)
+    except frappe.exceptions.LinkExistsError:
+        frappe.db.set_value("Address", name, "disabled", 1)
 
-    frappe.delete_doc("Address", name, ignore_permissions=True)
     return None
