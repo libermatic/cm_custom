@@ -1,6 +1,6 @@
 {
   "name": "cm_custom",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Customizations for CM",
   "main": "cm_custom/public/index.js",
   "scripts": {
