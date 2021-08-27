@@ -66,11 +66,11 @@ def _make_sales_order(customer_id, **kwargs):
                 "company": settings.company
                 or frappe.defaults.get_user_default("company"),
                 "delivery_date": args.get("transaction_date"),
+                "shipping_address_name": args.get("customer_address"),
                 "currency": frappe.defaults.get_user_default("currency"),
                 "selling_price_list": frappe.get_cached_value(
                     "Selling Settings", None, "selling_price_list"
                 ),
-                "taxes_and_charges": settings.taxes_and_charges,
             },
             args,
         )

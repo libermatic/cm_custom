@@ -207,7 +207,7 @@ def create_address(token, **kwargs):
 
 
 def _create_address(customer, args):
-    fields = ["address_line1", "address_line2", "city", "state", "country", "pincode"]
+    fields = ["address_line1", "address_line2", "city", "county", "state", "country", "pincode"]
     _args = keyfilter(lambda x: x in fields, args)
     doc = frappe.get_doc(
         merge({"doctype": "Address", "address_type": "Billing"}, _args)
