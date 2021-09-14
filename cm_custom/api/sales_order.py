@@ -53,6 +53,16 @@ def create(token, **kwargs):
 def _make_sales_order(customer_id, **kwargs):
     settings = frappe.get_single("Ahong eCommerce Settings")
     args = keyfilter(lambda x: x in ["transaction_date", "customer_address"], kwargs)
+    location = (
+        frappe.get_cached_value("Address", args.get("customer_address"), "location")
+        if args.get("customer_address")
+        else None
+    )
+    delivery_charges = (
+        frappe.get_cached_value("Location", location, "delivery_charges_template")
+        if location
+        else None
+    )
 
     doc = frappe.get_doc(
         merge(
@@ -71,10 +81,14 @@ def _make_sales_order(customer_id, **kwargs):
                 "selling_price_list": frappe.get_cached_value(
                     "Selling Settings", None, "selling_price_list"
                 ),
+                "taxes_and_charges": delivery_charges,
             },
             args,
         )
     )
+
+    print(kwargs)
+    print(doc.taxes_and_charges)
 
     for item_args in json.loads(kwargs.get("items", "[]")):
         doc.append(
@@ -96,6 +110,8 @@ def _make_sales_order(customer_id, **kwargs):
 
     doc.flags.ignore_permissions = True
     doc.run_method("set_missing_values")
+    doc.run_method("calculate_taxes_and_totals")
+    doc.run_method("set_taxes")
     return doc
 
 
