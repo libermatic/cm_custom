@@ -23,7 +23,7 @@ ADDRESS_FIELDS = [
 def get_customer_id(token):
     decoded_token = get_decoded_token(token)
     customer_id = frappe.db.exists(
-        "Customer", {"cm_firebase_uid": decoded_token["uid"]}
+        "Customer", {"firebase_uid": decoded_token["uid"]}
     )
     if not customer_id:
         frappe.throw(frappe._("Customer does not exist on backend"))
@@ -57,7 +57,7 @@ def create(token, **kwargs):
         frappe.throw(frappe._("Site setup not complete"))
 
     uid = decoded_token["uid"]
-    customer_id = frappe.db.exists("Customer", {"cm_firebase_uid": uid})
+    customer_id = frappe.db.exists("Customer", {"firebase_uid": uid})
     if customer_id:
         frappe.throw(frappe._("Customer already created"))
 
@@ -69,7 +69,7 @@ def create(token, **kwargs):
         if existing:
             doc = frappe.get_doc("Customer", existing)
             doc.update(
-                {"customer_name": customer_args.get("customer_name"), "cm_firebase_uid": uid}
+                {"customer_name": customer_args.get("customer_name"), "firebase_uid": uid}
             )
             if customer_args.get("email_id") and doc.customer_primary_contact:
                 contact = frappe.get_doc("Contact", doc.customer_primary_contact)
@@ -82,7 +82,7 @@ def create(token, **kwargs):
             merge(
                 {
                     "doctype": "Customer",
-                    "cm_firebase_uid": uid,
+                    "firebase_uid": uid,
                     "cm_mobile_no": customer_args.get("mobile_no"),
                     "customer_type": "Individual",
                     "customer_group": frappe.db.get_single_value(
