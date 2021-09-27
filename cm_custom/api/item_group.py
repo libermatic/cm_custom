@@ -33,8 +33,11 @@ def get_all(list_type="all"):
                 as_list=1,
             )
         ]
-        if home_item_groups:
-            filters.update({"name": ("in", home_item_groups)})
+        if not home_item_groups:
+            return []
+
+        filters.update({"name": ("in", home_item_groups)})
+
     elif list_type == "section":
         return _get_section_groups()
 
