@@ -2,4 +2,3 @@ frappe
 erpnext
 posx
 toolz
-firebase_admin==4.5.2
