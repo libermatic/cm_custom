@@ -100,3 +100,91 @@ def list_item_stock_qtys(item_codes):
     )
 
 
+@frappe.whitelist()
+def stock(limit_start=0, limit_page_length=20, item_group=None, search=None, show_zero=0):
+    clauses = ["1"]
+    values = {
+        "limit_start": frappe.utils.cint(limit_start),
+        "limit_page_length": frappe.utils.cint(limit_page_length),
+    }
+    warehouse = frappe.db.get_value("Server Script", "list_bin", "script")
+
+    if warehouse:
+        tree = frappe.db.get_value(
+            "Warehouse",
+            warehouse,
+            fieldname=["lft", "rgt"],
+        )
+        warehouses = [
+            x for (x,) in frappe.get_all(
+                "Warehouse",
+                filters={
+                    "lft": (">=", tree[0]),
+                    "rgt": ("<=", tree[1]),
+                },
+                as_list=1,
+            )
+        ]
+        if warehouses:
+            clauses.append("`tabBin`.warehouse IN %(warehouses)s")
+            values.update({"warehouses": warehouses})
+   
+    if item_group:
+        tree = frappe.db.get_value(
+            "Item Group",
+            item_group,
+            fieldname=["lft", "rgt"],
+        )
+        if tree:
+            item_groups = [
+                x for (x,) in frappe.get_all(
+                    "Item Group",
+                    filters={
+                        "lft": (">=", tree[0]),
+                        "rgt": ("<=", tree[1]),
+                    },
+                    as_list=1,
+                )
+            ]
+            if item_groups:
+                clauses.append("`tabItem`.item_group IN %(item_groups)s")
+                values.update({"item_groups": item_groups})
+        else:
+            clauses.append("`tabItem`.item_group = '_no_item_group'")
+
+
+    if search:
+        or_clauses = [
+            "`tabItem`.name LIKE %(search)s",
+            "`tabItem`.item_name LIKE %(search)s",
+            "`tabItem`.description LIKE %(search)s",
+        ]
+        clauses.append(f"({' OR '.join(or_clauses)})")
+        values.update({"search": f"%{search}%"})
+
+    if not frappe.parse_json(show_zero):
+        clauses.append("`tabBin`.actual_qty > 0")
+
+    return frappe.db.sql(
+        """
+            SELECT
+                `tabItem`.name,
+                `tabItem`.item_name,
+                `tabItem`.item_group,
+                SUM(`tabBin`.reserved_qty) AS reserved_qty,
+                SUM(`tabBin`.actual_qty) AS actual_qty,
+                SUM(`tabBin`.ordered_qty) AS ordered_qty,
+                SUM(`tabBin`.indented_qty) AS indented_qty,
+                SUM(`tabBin`.planned_qty) AS planned_qty,
+                SUM(`tabBin`.projected_qty) AS projected_qty
+            FROM `tabBin`
+            LEFT JOIN `tabItem`
+                ON `tabItem`.name = `tabBin`.item_code
+            WHERE {clauses}
+            GROUP BY `tabBin`.item_code
+            ORDER BY `tabItem`.item_name
+            LIMIT %(limit_page_length)s OFFSET %(limit_start)s
+        """.format(clauses=" AND ".join(clauses)),
+        values=values,
+        as_dict=1,
+    )
